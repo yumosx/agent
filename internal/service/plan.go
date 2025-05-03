@@ -1,13 +1,13 @@
 package service
 
 import (
-	"agent/internal/domain"
-	"agent/internal/service/agent"
-	"agent/internal/service/llm"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/yumosx/agent/internal/domain"
+	"github.com/yumosx/agent/internal/service/agent"
+	"github.com/yumosx/agent/internal/service/llm"
 	"regexp"
 	"strings"
 )

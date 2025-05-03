@@ -1,6 +1,6 @@
 package agent
 
-import "agent/internal/domain"
+import "github.com/yumosx/agent/internal/domain"
 
 type Bash struct {
 }

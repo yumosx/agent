@@ -1,9 +1,9 @@
 package llm
 
 import (
-	"agent/internal/domain"
 	"context"
 	"github.com/cohesion-org/deepseek-go"
+	"github.com/yumosx/agent/internal/domain"
 )
 
 type Handler struct {

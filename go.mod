@@ -1,4 +1,4 @@
-module agent
+module github.com/yumosx/agent
 
 go 1.24.1
 

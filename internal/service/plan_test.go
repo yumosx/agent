@@ -1,11 +1,11 @@
 package service
 
 import (
-	"agent/internal/service/agent"
-	"agent/internal/service/llm"
 	"context"
 	"github.com/cohesion-org/deepseek-go"
 	"github.com/stretchr/testify/require"
+	"github.com/yumosx/agent/internal/service/agent"
+	"github.com/yumosx/agent/internal/service/llm"
 	"os"
 	"testing"
 )
