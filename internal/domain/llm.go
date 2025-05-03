@@ -9,7 +9,9 @@ type LLMResponse struct {
 type LLMRequest struct {
 	SystemContent string
 	Content       string
+	Assistant     string
 	Tools         []Tool
+	Choice        string
 }
 
 type Tool struct {

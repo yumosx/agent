@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/yumosx/agent/internal/domain"
-	"github.com/yumosx/agent/internal/service/agent"
 	"github.com/yumosx/agent/internal/service/llm"
 	"regexp"
 	"strings"
@@ -20,14 +19,14 @@ const (
 )
 
 type PlanService struct {
-	handler   *llm.Handler
-	Id        string
-	plan      *domain.Plan
-	executors []agent.Executor
+	handler  *llm.Handler
+	Id       string
+	plan     *domain.Plan
+	executor *PlanExecutor
 }
 
-func NewPlanService(id string, handler *llm.Handler, executor []agent.Executor) *PlanService {
-	return &PlanService{Id: id, handler: handler, plan: &domain.Plan{Id: id}, executors: executor}
+func NewPlanService(id string, handler *llm.Handler, executor *PlanExecutor) *PlanService {
+	return &PlanService{Id: id, handler: handler, plan: &domain.Plan{Id: id}, executor: executor}
 }
 
 func (p *PlanService) Execute(ctx context.Context, text string) error {
@@ -47,8 +46,7 @@ func (p *PlanService) Execute(ctx context.Context, text string) error {
 		if err != nil {
 			return err
 		}
-		e := p.getExecutor()
-		err = p.executeStep(e, index, step)
+		err = p.executeStep(p.executor, index, step)
 		if err != nil {
 			return err
 		}
@@ -57,14 +55,6 @@ func (p *PlanService) Execute(ctx context.Context, text string) error {
 		}
 	}
 	return nil
-}
-
-func (p *PlanService) getExecutor() agent.Executor {
-	for _, e := range p.executors {
-		return e
-	}
-
-	return agent.NewPrintExecutor()
 }
 
 func (p *PlanService) createInitPlan(ctx context.Context, text string) error {
@@ -119,7 +109,7 @@ func (p *PlanService) getStepInfo() (int, string, error) {
 	return -1, "", nil
 }
 
-func (p *PlanService) executeStep(executor agent.Executor, index int, step string) error {
+func (p *PlanService) executeStep(executor *PlanExecutor, index int, step string) error {
 	plan := p.formatPlan()
 	stepPrompt := fmt.Sprintf(`
 CURRENT PLAN STATUS:
@@ -129,10 +119,11 @@ You are now working on step %d: %s
 Please execute this step using the appropriate tools. When you're done, provide a summary of what you accomplished.
 `, plan, index, step)
 
-	err := executor.Run(stepPrompt)
+	str, err := executor.Run(stepPrompt)
 	if err != nil {
 		return err
 	}
+	fmt.Println(str)
 	err = p.markStep(index, COMPLETED)
 
 	if err != nil {

@@ -31,6 +31,11 @@ func (h *Handler) Invoke(ctx context.Context, req domain.LLMRequest) (domain.LLM
 			deepseek.ChatCompletionMessage{Role: deepseek.ChatMessageRoleUser, Content: req.Content})
 	}
 
+	if req.Assistant != "" {
+		request.Messages = append(request.Messages,
+			deepseek.ChatCompletionMessage{Role: deepseek.ChatMessageRoleAssistant, Content: req.Assistant})
+	}
+
 	if len(req.Tools) != 0 {
 		request.Tools = make([]deepseek.Tool, len(req.Tools))
 
@@ -48,6 +53,10 @@ func (h *Handler) Invoke(ctx context.Context, req domain.LLMRequest) (domain.LLM
 				switch tool.Function.Name {
 				case "planning":
 					request.Tools[i].Function.Parameters.Properties = h.NewPlanParams()
+				case "create_chat_completion":
+					request.Tools[i].Function.Parameters.Properties = h.NewChatParams()
+				case "golang_execute":
+					request.Tools[i].Function.Parameters.Properties = h.NewGolangParams()
 				default:
 				}
 			}
@@ -131,6 +140,34 @@ func (h *Handler) NewPlanParams() map[string]interface{} {
 		"step_notes": map[string]interface{}{
 			"description": "Additional notes for a step. Optional for mark_step command.",
 			"type":        "string",
+		},
+	}
+}
+
+func (h *Handler) NewChatParams() map[string]interface{} {
+	return map[string]interface{}{
+		"response": map[string]interface{}{
+			"type":        "string",
+			"description": "The response text that should be delivered to the user.",
+		},
+	}
+}
+
+func (h *Handler) NewTrimParams() map[string]interface{} {
+	return map[string]interface{}{
+		"status": map[string]interface{}{
+			"type":        "string",
+			"description": "the finish status of the interaction.",
+			"enum":        []string{"success", "failure"},
+		},
+	}
+}
+
+func (h *Handler) NewGolangParams() map[string]interface{} {
+	return map[string]interface{}{
+		"code": map[string]interface{}{
+			"type":        "string",
+			"description": "The Golang code to execute",
 		},
 	}
 }
