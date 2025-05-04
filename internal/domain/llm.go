@@ -1,10 +1,8 @@
 package domain
 
-type LLMResponse struct {
-	Content   string
-	Done      bool
-	ToolCalls []LLMToolCall
-}
+import (
+	"github.com/yumosx/agent/internal/domain/params"
+)
 
 type LLMRequest struct {
 	SystemContent string
@@ -27,8 +25,14 @@ type Function struct {
 
 type FunctionParameters struct {
 	Type       string
-	Properties map[string]interface{}
+	Properties *params.Parameters
 	Required   []string
+}
+
+type LLMResponse struct {
+	Content   string
+	Done      bool
+	ToolCalls []LLMToolCall
 }
 
 type LLMToolCall struct {

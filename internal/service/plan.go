@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/yumosx/agent/internal/domain"
+	"github.com/yumosx/agent/internal/domain/params"
 	"github.com/yumosx/agent/internal/service/llm"
 	"regexp"
 	"strings"
@@ -19,24 +20,54 @@ const (
 )
 
 type PlanService struct {
-	handler  *llm.Handler
 	Id       string
+	handler  *llm.Handler
 	plan     *domain.Plan
 	executor *PlanExecutor
 }
 
-func NewPlanService(id string, handler *llm.Handler, executor *PlanExecutor) *PlanService {
-	return &PlanService{Id: id, handler: handler, plan: &domain.Plan{Id: id}, executor: executor}
+func NewPlanService(handler *llm.Handler, executor *PlanExecutor) *PlanService {
+	return &PlanService{handler: handler, executor: executor, plan: &domain.Plan{Id: "1"}}
 }
 
-func (p *PlanService) Execute(ctx context.Context, text string) error {
-	var err error
-	if text != "" {
-		err = p.createInitPlan(ctx, text)
-		if err != nil {
-			return err
+func (p *PlanService) Plan(ctx context.Context, s string) (string, error) {
+	var req domain.LLMRequest
+
+	req.SystemContent = `You are a planning assistant. Create a concise, actionable plan with clear steps. 
+Focus on key milestones rather than detailed sub-steps. 
+Optimize for clarity and efficiency.`
+	req.Content = fmt.Sprintf("Create a reasonable plan with clear steps to accomplish the task: %s", s)
+	req.Tools = []domain.Tool{p.newPlanTool()}
+
+	err := p.createInitPlan(ctx, req)
+	if err != nil {
+		return "", err
+	}
+	plan := p.formatPlan()
+	return plan, nil
+}
+
+func (p *PlanService) createInitPlan(ctx context.Context, req domain.LLMRequest) error {
+	resp, err := p.handler.Invoke(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	if len(resp.ToolCalls) == 0 {
+		return errors.New("LLM 返回的 toolCalls 为空")
+	}
+
+	for _, t := range resp.ToolCalls {
+		if t.Function.Name == "planning" {
+			return p.initPlanWithArgs(t.Function.Arguments)
 		}
 	}
+
+	return errors.New("LLM 返回的 Function name 非法")
+}
+
+func (p *PlanService) Execute(ctx context.Context) error {
+	var err error
 	for {
 		var (
 			index int
@@ -54,36 +85,6 @@ func (p *PlanService) Execute(ctx context.Context, text string) error {
 			break
 		}
 	}
-	return nil
-}
-
-func (p *PlanService) createInitPlan(ctx context.Context, text string) error {
-	var req domain.LLMRequest
-
-	req.SystemContent = `You are a planning assistant. Create a concise, actionable plan with clear steps. 
-Focus on key milestones rather than detailed sub-steps. 
-Optimize for clarity and efficiency.`
-
-	req.Content = fmt.Sprintf("Create a reasonable plan with clear steps to accomplish the task: %s", text)
-
-	t := p.newPlanTool()
-	req.Tools = []domain.Tool{t}
-
-	resp, err := p.handler.Invoke(ctx, req)
-	if err != nil {
-		return err
-	}
-
-	if len(resp.ToolCalls) == 0 {
-		return errors.New("返回无效 toolCalls")
-	}
-
-	for _, t := range resp.ToolCalls {
-		if t.Function.Name == "planning" {
-			return p.initPlanWithArgs(t.Function.Arguments)
-		}
-	}
-
 	return nil
 }
 
@@ -139,7 +140,8 @@ func (p *PlanService) newPlanTool() domain.Tool {
 		Name:        "planning",
 		Description: "A planning that allows the agent to create and manage plans for solving complex tasks.\n The provides functionality for creating plans, updating plan steps, and tracking progress.",
 		Parameters: &domain.FunctionParameters{
-			Required: []string{"command"},
+			Properties: params.NewPlanParams(),
+			Required:   []string{"command"},
 		},
 	}
 

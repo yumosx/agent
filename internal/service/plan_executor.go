@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"github.com/yumosx/agent/internal/domain"
 	"github.com/yumosx/agent/internal/service/llm"
 )
@@ -115,7 +116,7 @@ Use print statements to see results.`,
 }
 
 func (p *PlanExecutor) executeTrim(str string) string {
-	return ""
+	return fmt.Sprintf("The interaction has been completed with status: %s", str)
 }
 
 func (p *PlanExecutor) executeGolang(str string) string {
