@@ -19,18 +19,18 @@ const (
 	BLOCKED     = "blocked"
 )
 
-type AgentService struct {
+type PlanService struct {
 	Id       string
 	handler  *llm.Handler
 	plan     *domain.Plan
 	executor *PlanExecutor
 }
 
-func NewPlanService(handler *llm.Handler, executor *PlanExecutor) *AgentService {
-	return &AgentService{handler: handler, executor: executor, plan: &domain.Plan{Id: "1"}}
+func NewPlanService(handler *llm.Handler, executor *PlanExecutor) *PlanService {
+	return &PlanService{handler: handler, executor: executor, plan: &domain.Plan{Id: "1"}}
 }
 
-func (p *AgentService) Plan(ctx context.Context, s string) (string, error) {
+func (p *PlanService) Plan(ctx context.Context, s string) (string, error) {
 	var req domain.LLMRequest
 
 	req.SystemContent = `You are a planning assistant. Create a concise, actionable plan with clear steps. 
@@ -50,7 +50,7 @@ Optimize for clarity and efficiency.`
 	return plan, nil
 }
 
-func (p *AgentService) createInitPlan(ctx context.Context, req domain.LLMRequest) error {
+func (p *PlanService) createInitPlan(ctx context.Context, req domain.LLMRequest) error {
 	resp, err := p.handler.Invoke(ctx, req)
 	if err != nil {
 		return err
@@ -69,7 +69,7 @@ func (p *AgentService) createInitPlan(ctx context.Context, req domain.LLMRequest
 	return errors.New("LLM 返回的 Function name 非法")
 }
 
-func (p *AgentService) Execute(ctx context.Context) error {
+func (p *PlanService) Execute(ctx context.Context) error {
 	var err error
 	for {
 		var (
@@ -91,7 +91,7 @@ func (p *AgentService) Execute(ctx context.Context) error {
 	return nil
 }
 
-func (p *AgentService) getStepInfo() (int, string, error) {
+func (p *PlanService) getStepInfo() (int, string, error) {
 	steps := p.plan.Steps
 
 	for i, step := range steps {
@@ -113,7 +113,7 @@ func (p *AgentService) getStepInfo() (int, string, error) {
 	return -1, "", nil
 }
 
-func (p *AgentService) executeStep(ctx context.Context, executor *PlanExecutor, index int, step string) error {
+func (p *PlanService) executeStep(ctx context.Context, executor *PlanExecutor, index int, step string) error {
 	plan := p.formatPlan()
 	stepPrompt := fmt.Sprintf(`
 CURRENT PLAN STATUS:
@@ -137,7 +137,7 @@ Please execute this step using the appropriate tools. When you're done, provide 
 	return nil
 }
 
-func (p *AgentService) newPlanTool() domain.Tool {
+func (p *PlanService) newPlanTool() domain.Tool {
 	var t domain.Tool
 	t.Type = "function"
 	t.Function = domain.Function{
@@ -152,7 +152,7 @@ func (p *AgentService) newPlanTool() domain.Tool {
 	return t
 }
 
-func (p *AgentService) initPlanWithArgs(args string) error {
+func (p *PlanService) initPlanWithArgs(args string) error {
 	var (
 		parsedArgs map[string]interface{}
 		err        error
@@ -179,7 +179,7 @@ func (p *AgentService) initPlanWithArgs(args string) error {
 	return nil
 }
 
-func (p *AgentService) markStep(index int, state string) error {
+func (p *PlanService) markStep(index int, state string) error {
 	if index >= len(p.plan.Steps) {
 		return errors.New("当前 step index 非法")
 	}
@@ -187,7 +187,7 @@ func (p *AgentService) markStep(index int, state string) error {
 	return nil
 }
 
-func (p *AgentService) formatPlan() string {
+func (p *PlanService) formatPlan() string {
 	output := fmt.Sprintf("Plan: %s (ID: %s)\n", p.plan.Title, p.Id)
 	output += strings.Repeat("=", len(output)) + "\n\n"
 	total := len(p.plan.Steps)
@@ -230,7 +230,7 @@ func (p *AgentService) formatPlan() string {
 	for i, step := range p.plan.Steps {
 		switch step.State {
 		case NO_STARTED:
-			statusSymbol = "[ ]"
+			statusSymbol = "[-]"
 		case IN_PROGRESS:
 			statusSymbol = "[→]"
 		case COMPLETED:

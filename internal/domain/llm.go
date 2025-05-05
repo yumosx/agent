@@ -15,14 +15,14 @@ var (
 	SYSTEM    = "SYSTEM"
 	USER      = "user"
 	ASSISTANT = "assistant"
-	FUNCTION  = "FUNCTION"
+	TOOL      = "tool"
 )
 
 type Msg struct {
-	Role    string
-	Content string
-	Id      string
-	Tool    Tool
+	Role      string
+	Content   string
+	Id        string
+	ToolCalls []LLMToolCall
 }
 
 type Tool struct {

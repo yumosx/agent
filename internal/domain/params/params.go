@@ -78,3 +78,18 @@ func NewChatParams() *Parameters {
 		"The response text that should be delivered to the user.")
 	return parameters
 }
+
+func NewBashParams() *Parameters {
+	parameters := newParams()
+	parameters.Params["command"] = NewValue(
+		"string",
+		"The bash command to execute. Can be empty to view additional logs when previous exit code is `-1`. Can be `ctrl+c` to interrupt the currently running process.")
+
+	return parameters
+}
+
+func NewBrowserUse() *Parameters {
+	parameters := newParams()
+	parameters.Params[""] = NewValue("", "")
+	return parameters
+}

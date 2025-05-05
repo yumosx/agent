@@ -36,10 +36,6 @@ func (h *Handler) Invoke(ctx context.Context, req domain.LLMRequest) (domain.LLM
 				request.Messages = append(request.Messages,
 					deepseek.ChatCompletionMessage{Role: deepseek.ChatMessageRoleAssistant, Content: msg.Content})
 			}
-			if msg.Role == domain.FUNCTION {
-				request.Messages = append(request.Messages,
-					deepseek.ChatCompletionMessage{Role: deepseek.ChatMessageRoleTool, Content: msg.Content, ToolCallID: msg.Id})
-			}
 		}
 	}
 
@@ -70,10 +66,10 @@ func (h *Handler) Invoke(ctx context.Context, req domain.LLMRequest) (domain.LLM
 		return resp, nil
 	}
 
-	resp.ToolCalls = make([]domain.LLMToolCall, 0, len(ch.ToolCalls))
+	resp.ToolCalls = make([]domain.LLMToolCall, len(ch.ToolCalls))
 
-	for _, tool := range ch.ToolCalls {
-		resp.ToolCalls = append(resp.ToolCalls, domain.LLMToolCall{
+	for i, tool := range ch.ToolCalls {
+		resp.ToolCalls[i] = domain.LLMToolCall{
 			ID:    tool.ID,
 			Index: tool.Index,
 			Type:  tool.Type,
@@ -81,7 +77,7 @@ func (h *Handler) Invoke(ctx context.Context, req domain.LLMRequest) (domain.LLM
 				Name:      tool.Function.Name,
 				Arguments: tool.Function.Arguments,
 			},
-		})
+		}
 	}
 
 	return resp, nil

@@ -18,7 +18,7 @@ func TestPlanExecute(t *testing.T) {
 	plan := NewPlanService(handler, executor)
 	var ctx = context.Background()
 
-	s, err := plan.Plan(ctx, "使用go语言编写一段答应 hello 的程序")
+	s, err := plan.Plan(ctx, "执行ls 命令")
 	require.NoError(t, err)
 	println(s)
 
