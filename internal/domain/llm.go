@@ -6,10 +6,23 @@ import (
 
 type LLMRequest struct {
 	SystemContent string
-	Content       string
-	Assistant     string
+	Msgs          []Msg
 	Tools         []Tool
 	Choice        string
+}
+
+var (
+	SYSTEM    = "SYSTEM"
+	USER      = "user"
+	ASSISTANT = "assistant"
+	FUNCTION  = "FUNCTION"
+)
+
+type Msg struct {
+	Role    string
+	Content string
+	Id      string
+	Tool    Tool
 }
 
 type Tool struct {

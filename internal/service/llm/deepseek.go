@@ -26,14 +26,21 @@ func (h *Handler) Invoke(ctx context.Context, req domain.LLMRequest) (domain.LLM
 			deepseek.ChatCompletionMessage{Role: deepseek.ChatMessageRoleSystem, Content: req.SystemContent})
 	}
 
-	if req.Content != "" {
-		request.Messages = append(request.Messages,
-			deepseek.ChatCompletionMessage{Role: deepseek.ChatMessageRoleUser, Content: req.Content})
-	}
-
-	if req.Assistant != "" {
-		request.Messages = append(request.Messages,
-			deepseek.ChatCompletionMessage{Role: deepseek.ChatMessageRoleAssistant, Content: req.Assistant})
+	if len(req.Msgs) != 0 {
+		for _, msg := range req.Msgs {
+			if msg.Role == domain.USER {
+				request.Messages = append(request.Messages,
+					deepseek.ChatCompletionMessage{Role: deepseek.ChatMessageRoleUser, Content: msg.Content})
+			}
+			if msg.Role == domain.ASSISTANT {
+				request.Messages = append(request.Messages,
+					deepseek.ChatCompletionMessage{Role: deepseek.ChatMessageRoleAssistant, Content: msg.Content})
+			}
+			if msg.Role == domain.FUNCTION {
+				request.Messages = append(request.Messages,
+					deepseek.ChatCompletionMessage{Role: deepseek.ChatMessageRoleTool, Content: msg.Content, ToolCallID: msg.Id})
+			}
+		}
 	}
 
 	if len(req.Tools) != 0 {

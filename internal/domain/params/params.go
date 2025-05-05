@@ -1,7 +1,7 @@
 package params
 
 func NewPlanParams() *Parameters {
-	parameters := NewParameters()
+	parameters := newParams()
 
 	parameters.Params["command"] = NewValue(
 		"string",
@@ -54,7 +54,7 @@ func NewPlanParams() *Parameters {
 }
 
 func NewTrimParams() *Parameters {
-	parameters := NewParameters()
+	parameters := newParams()
 	parameters.Params["status"] = NewValue(
 		"string",
 		"the finish status of the interaction.",
@@ -64,9 +64,17 @@ func NewTrimParams() *Parameters {
 }
 
 func NewGoParams() *Parameters {
-	parameters := NewParameters()
+	parameters := newParams()
 	parameters.Params["code"] = NewValue(
 		"string",
 		"The Golang code to execute")
+	return parameters
+}
+
+func NewChatParams() *Parameters {
+	parameters := newParams()
+	parameters.Params["response"] = NewValue(
+		"string",
+		"The response text that should be delivered to the user.")
 	return parameters
 }

@@ -14,7 +14,7 @@ func main() {
 	client := deepseek.NewClient(token)
 	llmHandler := llm.NewHandler(client)
 	executor := service.NewPlanExecutor(llmHandler)
-	plan := service.NewPlanService("1", llmHandler, executor)
+	plan := service.NewPlanService(llmHandler, executor)
 	hd := handler.NewHandler(plan)
 
 	router := gin.Default()

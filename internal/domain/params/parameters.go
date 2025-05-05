@@ -4,7 +4,7 @@ type Parameters struct {
 	Params map[string]*Value
 }
 
-func NewParameters() *Parameters {
+func newParams() *Parameters {
 	return &Parameters{Params: make(map[string]*Value)}
 }
 
@@ -55,6 +55,9 @@ func (sp *Value) ToMap() map[string]interface{} {
 	}
 	if len(sp.Enum) != 0 {
 		result["enum"] = sp.Enum
+	}
+	if len(sp.Item) != 0 {
+		result["items"] = sp.Item
 	}
 	return result
 }

@@ -7,16 +7,17 @@ import (
 )
 
 type Handler struct {
-	svc *service.PlanService
+	svc *service.AgentService
 }
 
-func NewHandler(svc *service.PlanService) *Handler {
+func NewHandler(svc *service.AgentService) *Handler {
 	return &Handler{svc: svc}
 }
 
 func (h *Handler) SetupRoutes(router *gin.Engine) {
 	router.GET("/", h.serveIndex)
 	router.POST("/chat", h.handleChat)
+	router.POST("/code", h.handleCode)
 }
 
 func (h *Handler) serveIndex(ctx *gin.Context) {
@@ -44,4 +45,8 @@ func (h *Handler) handleChat(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, response)
+}
+
+func (h *Handler) handleCode(ctx *gin.Context) {
+
 }

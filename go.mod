@@ -6,6 +6,7 @@ require (
 	github.com/cohesion-org/deepseek-go v1.3.1
 	github.com/gin-gonic/gin v1.10.0
 	github.com/stretchr/testify v1.10.0
+	github.com/yumosx/got v1.0.1
 )
 
 require (
